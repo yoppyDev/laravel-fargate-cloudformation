@@ -1,3 +1,12 @@
+# ------------------------------------------------------------#
+# Settings
+# - VPC
+# - InternetGateway
+# - SubnetA
+# - RouteTable
+# - Route
+# ------------------------------------------------------------#
+
 AWSTemplateFormatVersion: "2010-09-09"
 Description:
   VPC and Subnet Create
