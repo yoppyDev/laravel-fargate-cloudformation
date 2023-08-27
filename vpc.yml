@@ -1,10 +1,12 @@
 # ------------------------------------------------------------#
-# Settings
+# Create Resource
 # - VPC
 # - InternetGateway
-# - SubnetA
+# - PrivateSubnet
+# - PublicSubnet
 # - RouteTable
 # - Route
+# - securityGroup
 # ------------------------------------------------------------#
 
 AWSTemplateFormatVersion: "2010-09-09"
@@ -39,7 +41,7 @@ Metadata:
 Parameters:
   PJPrefix:
     Type: String
-    Default: testprefix
+    Default: Laravel
     AllowedPattern: "[a-z][a-z0-9]*"
     ConstraintDescription: Invalid input value for the PJPrefix.
 
@@ -250,6 +252,45 @@ Resources:
       SubnetId: !Ref PrivateSubnet1
       RouteTableId: !Ref PrivateRouteTable2
 
+  # ------------------------------------------------------------#
+  #  SecurityGroup
+  # ------------------------------------------------------------#
+  SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ${PJPrefix}-SG
+      GroupDescription: ${PJPrefix}-SG-Description
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - Description: Enable HTTP access via port 80 IPv4
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: Enable HTTP access via port 80 IPv6
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIpv6: ::/0
+        - Description: Enable HTTPS access via port 443 IPv4
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: Enable HTTPS access via port 443 IPv6
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIpv6: ::/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-SG"
+
 # ------------------------------------------------------------#
 # Output Parameters
 # ------------------------------------------------------------#
@@ -326,3 +367,9 @@ Outputs:
     Value: !Ref PrivateRouteTable2
     Export:
       Name: !Sub "${PJPrefix}-private-route-2"
+
+# SG
+  SG:
+    Value: !Ref SG
+    Export:
+      Name: !Sub "${PJPrefix}-SG"
