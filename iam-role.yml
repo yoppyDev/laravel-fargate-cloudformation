@@ -5,7 +5,7 @@
 
 AWSTemplateFormatVersion: "2010-09-09"
 Description:
-  IAM Role for ECS
+  IAM Role (ECSTaskRole)
 
 Resources:
   ECSTaskRole:
