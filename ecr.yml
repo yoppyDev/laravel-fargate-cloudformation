@@ -1,0 +1,75 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - ECR
+# ------------------------------------------------------------#
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create ECR Repositories
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+Resources:
+  NginxECR:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${PJPrefix}-nginx-ecr"
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Expire images older than 30 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+  LaravelECR:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${PJPrefix}-laravel-ecr"
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Expire images older than 30 days",
+                "selection": {
+                  "tagStatus": "untagged",
+                  "countType": "sinceImagePushed",
+                  "countUnit": "days",
+                  "countNumber": 30
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+Outputs:
+  NginxRepositoryArn:
+    Description: ARN of the Nginx ECR repository
+    Value: !GetAtt NginxECR.Arn
+    Export:
+      Name: !Sub "${PJPrefix}-nginx-ecr-arn"
+
+  LaravelRepositoryArn:
+    Description: ARN of the Laravel ECR repository
+    Value: !GetAtt LaravelECR.Arn
+    Export:
+      Name: !Sub "${PJPrefix}-laravel-ecr-arn"
