@@ -1,0 +1,32 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - IAM Role (ECSTaskRole)
+# ------------------------------------------------------------#
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  IAM Role for ECS
+
+Resources:
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "ECSTaskRole"
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+        - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
+
+Outputs:
+  ECSTaskRole:
+    Description: ECS Task Role
+    Value: !Ref ECSTaskRole
+    Export:
+      Name: "ECSTaskRole"
