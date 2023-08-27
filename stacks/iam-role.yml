@@ -7,11 +7,17 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description:
   IAM Role (ECSTaskRole)
 
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
 Resources:
   ECSTaskRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: "ECSTaskRole"
+      RoleName: !Sub "${PJPrefix}-ECSTaskRole"
       Path: /
       AssumeRolePolicyDocument:
         Version: 2012-10-17
@@ -25,8 +31,8 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
 
 Outputs:
-  ECSTaskRole:
-    Description: ECS Task Role
-    Value: !Ref ECSTaskRole
+  ECSTaskRoleArn:
+    Description: ARN of the ECS Task Role
+    Value: !GetAtt ECSTaskRole.Arn
     Export:
-      Name: "ECSTaskRole"
+      Name: !Sub "${PJPrefix}-ECSTaskRole-arn"

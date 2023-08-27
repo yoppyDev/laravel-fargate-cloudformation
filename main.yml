@@ -1,0 +1,117 @@
+# ------------------------------------------------------------#
+# Create Resource
+# ------------------------------------------------------------#
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  Laravel on ECS
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: "Project Name Prefix"
+        Parameters:
+          - PJPrefix
+      - Label:
+          default: VPC
+        Parameters:
+          - VPCCIDR
+      - Label:
+          default: PublicSubnet
+        Parameters:
+          - PublicSubnet1CIDR
+          - PublicSubnet2CIDR
+      - Label:
+          default: PrivateSubnet
+        Parameters:
+          - PrivateSubnet1CIDR
+          - PrivateSubnet1CIDR
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+  VPCCIDR:
+    Type: String
+    Default: 10.1.0.0/16
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid VPCCidrBlock.
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: 10.1.0.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PublicSubnet1CidrBlock.
+
+  PublicSubnet2CIDR:
+    Type: String
+    Default: 10.1.1.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PublicSubnet2CidrBlock.
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.1.4.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.1.5.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
+
+Resources:
+  # ------------ ECR ----------------
+  ECR:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: ./stacks/ecr.yml
+      Parameters:
+        PJPrefix : !Sub "${PJPrefix}"
+  # ------------ IAM Role ----------------
+  iamRole:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PJPrefix : !Sub "${PJPrefix}"
+      TemplateURL: ./stacks/iam-role.yml
+  # ------------ cloudwatch ----------------
+  cloudwatch:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PJPrefix : !Sub "${PJPrefix}"
+      TemplateURL: ./stacks/cloudwatch.yml
+  # ------------ vpx ----------------
+  vpc:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PJPrefix : !Sub "${PJPrefix}"
+        VPCCIDR : !Sub "${VPCCIDR}"
+        PublicSubnet1CIDR : !Sub "${PublicSubnet1CIDR}"
+        PublicSubnet2CIDR : !Sub "${PublicSubnet2CIDR}"
+        PrivateSubnet1CIDR : !Sub "${PrivateSubnet1CIDR}"
+        PrivateSubnet2CIDR : !Sub "${PrivateSubnet2CIDR}"
+      TemplateURL: ./stacks/vpc.yml
+  # ------------ ecs ----------------
+  ecs:
+    Type      : AWS::CloudFormation::Stack
+    DependsOn : [vpc, iamRole, cloudwatch, ECR]
+    Properties:
+      Parameters:
+        PJPrefix : !Sub "${PJPrefix}"
+      TemplateURL: stacks/ecs.yml

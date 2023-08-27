@@ -1,0 +1,114 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - Service
+# - Cluster Service
+# - Task Definition
+# ------------------------------------------------------------#
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for ECS resources
+
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+Resources:
+  # ECS Cluster
+  ECSCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterName: !Sub "${PJPrefix}-cluster"
+
+  # Task Definition
+  ECSTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      Family: !Sub "${PJPrefix}-run-task"
+      TaskRoleArn:
+        Fn::ImportValue:
+          !Sub "${PJPrefix}-ECSTaskRole-arn"
+      ExecutionRoleArn:
+        Fn::ImportValue:
+          !Sub "${PJPrefix}-ECSTaskRole-arn"
+      NetworkMode: "awsvpc"
+      ContainerDefinitions:
+        - Name: "nginx"
+          Image:
+            Fn::ImportValue:
+              !Sub "${PJPrefix}-nginx-ecr-arn"
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Protocol: "tcp"
+          DependsOn:
+            - ContainerName: "laravel"
+              Condition: "START"
+          ReadonlyRootFilesystem: true
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group:
+                Fn::ImportValue:
+                  !Sub "${PJPrefix}-log-group"
+              awslogs-region: !Select [ 0, !GetAZs ]
+              awslogs-stream-prefix: "nginx"
+        - Name: "laravel"
+          Image:
+            Fn::ImportValue:
+              !Sub "${PJPrefix}-laravel-ecr-arn"
+          Essential: true
+          Environment:
+            - Name: "APP_ENV"
+              Value: "production"
+          ReadonlyRootFilesystem: true
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group:
+                Fn::ImportValue:
+                  !Sub "${PJPrefix}-log-group"
+              awslogs-region: !Select [ 0, !GetAZs ]
+              awslogs-datetime-format: "%Y-%m-%d %H:%M:%S"
+              awslogs-stream-prefix: "laravel"
+      RequiresCompatibilities:
+        - "FARGATE"
+      Cpu: "256"
+      Memory: "512"
+
+  # ECS Service
+  ECSService:
+    Type: "AWS::ECS::Service"
+    Properties:
+      ServiceName: !Sub "${PJPrefix}-service"
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSTaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - Fn::ImportValue:
+                !Sub "${PJPrefix}-public-subnet-1"
+            - Fn::ImportValue:
+                !Sub "${PJPrefix}-public-subnet-2"
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub "${PJPrefix}-SG"
+
+Outputs:
+  ClusterArn:
+    Value: !Ref ECSCluster
+    Description: The ARN of the ECS cluster
+
+  TaskDefinitionArn:
+    Description: The ARN of the created task definition
+    Value: !Ref ECSTaskDefinition
+
+  ServiceArn:
+    Value: !Ref ECSService
+    Description: The ARN of the ECS service

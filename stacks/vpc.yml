@@ -42,7 +42,6 @@ Parameters:
   PJPrefix:
     Type: String
     Default: Laravel
-    AllowedPattern: "[a-z][a-z0-9]*"
     ConstraintDescription: Invalid input value for the PJPrefix.
 
   VPCCIDR:
@@ -337,13 +336,13 @@ Outputs:
     Export:
       Name: !Sub "${PJPrefix}-private-subnet-1-cidr"
 
-  PrivateSubnet1:
-    Value: !Ref PrivateSubnet1
+  PrivateSubnet2:
+    Value: !Ref PrivateSubnet2
     Export:
       Name: !Sub "${PJPrefix}-private-subnet-2"
 
-  PrivateSubnet1CIDR:
-    Value: !Ref PrivateSubnet1CIDR
+  PrivateSubnet2CIDR:
+    Value: !Ref PrivateSubnet2CIDR
     Export:
       Name: !Sub "${PJPrefix}-private-subnet-2-cidr"
 
@@ -353,15 +352,15 @@ Outputs:
     Export:
       Name: !Sub "${PJPrefix}-public-route-1"
 
-  PublicRouteTable2:
-    Value: !Ref PublicRouteTable2
+  PublicRouteTable1:
+    Value: !Ref PublicRouteTable1
     Export:
-      Name: !Sub "${PJPrefix}-public-route-2"
+      Name: !Sub "${PJPrefix}-public-route-1"
 
-  PrivateRouteTable1:
-    Value: !Ref PrivateRouteTable1
+  PrivateRouteTable2:
+    Value: !Ref PrivateRouteTable2
     Export:
-      Name: !Sub "${PJPrefix}-private-route-1"
+      Name: !Sub "${PJPrefix}-private-route-2"
 
   PrivateRouteTable2:
     Value: !Ref PrivateRouteTable2
