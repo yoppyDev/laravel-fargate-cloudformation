@@ -1,33 +1,52 @@
-## 構成
+## 手順
+1. .envファイルを作成
+```
+cp .env.example .env
+```
+2. .envファイルにそれぞれの値を入力
+3. Laravelプロジェクト作成
+```
+sh tools/util.sh createProject
+```
+3. ECR作成
+```
+sh tools/util.sh createEcr
+```
+4. buildしてpush
+```
+sh tools/util.sh build
+sh tools/util.sh push
+```
+3. S3バケット作成
+```
+sh tools/util.sh createBucket
+```
+5. デプロイ
+```
+sh tools/util.sh deploy
+```
 
-- VPN
-    - サブネット (IPv4 : 10.0.0.0/16)
-        - PUBLIC (IPv4 : 10.0.0.0/24) -> VPC
-        - PRIVATE -> VPC
-    - インターネットゲートウェイ -> VPC
-        - ルートテーブル (送信先 : 0.0.0.0/0)
-    - セキュリティーグループ (HTTP, [0.0.0.0/0, :/0]) -> VPC
-    - ALB
-        - ターゲットグループ
-- ECS
-    - クラスター
-    - サービス
-    - タスク定義
-    - AWS Systems Manager
-- IAMロール (ECSTaskRolte)
-    - AmazonECSTaskExecutionRolePolicy
-    - AmazonSSMReadOnlyAccess
-- CloudWatch
+## ディレクトリ構成
+```
+|- docker
+|   |- composer
+|   |- laravel
+|   |- nginx
+|- output
+|- src
+|- stacks
+|   |- cloudwatch.yml
+|   |- ecr.yml
+|   |- ecs.yml
+|   |- iam.yml
+|   |- vpc.yml
+|- tools
+|   |- util.sh
+|   |- aws-ecr-login.sh
+|- .env.example
+|- .gitignore
+|- docker-compose.yml
+```
 
-
-**deploy**
-```
-aws cloudformation deploy \
-    --template-file vpc.yml \
-    --stack-name VPCcreate \
-    --profile ecs-lesson
-```
-**delete**
-```
-aws cloudformation delete-stack --stack-name VPCcreate --profile ecs-lesson
-```
+## インフラ構成
+AZ : ap-northeast-1
