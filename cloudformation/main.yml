@@ -74,13 +74,6 @@ Parameters:
     ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
 
 Resources:
-  # ------------ ECR ----------------
-  ECR:
-    Type      : AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ./stacks/ecr.yml
-      Parameters:
-        PJPrefix : !Sub "${PJPrefix}"
   # ------------ IAM Role ----------------
   iamRole:
     Type      : AWS::CloudFormation::Stack
@@ -110,7 +103,7 @@ Resources:
   # ------------ ecs ----------------
   ecs:
     Type      : AWS::CloudFormation::Stack
-    DependsOn : [vpc, iamRole, cloudwatch, ECR]
+    DependsOn : [vpc, iamRole, cloudwatch]
     Properties:
       Parameters:
         PJPrefix : !Sub "${PJPrefix}"
