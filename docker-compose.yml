@@ -1,0 +1,19 @@
+version: '3.5'
+
+services:
+  nginx:
+    image: ${REGISTRY_URL}/nginx:latest
+    volumes:
+      - ./docker/nginx/dev/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8080:80
+    expose:
+      - 8080
+    depends_on:
+      - laravel
+  laravel:
+    image: ${REGISTRY_URL}/laravel:latest
+    volumes:
+      - ./src:/application
+    env_file:
+      - ./src/.env
