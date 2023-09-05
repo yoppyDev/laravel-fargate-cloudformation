@@ -27,7 +27,7 @@ build()
 {
     docker build --platform=linux/amd64 \
         -t laravel:latest \
-        -f ./Dockerfile .
+        -f ./docker/laravel/Dockerfile .
 
     docker build --platform=linux/amd64 \
         -t nginx:latest \
@@ -54,6 +54,16 @@ deploy()
         --output-template-file ./cloudformation/output/main-stack.yml
 
     rain deploy ./cloudformation/output/main-stack.yml laravel-templete
+}
+
+batch()
+{
+ aws ecs run-task \
+    --cluster ${PJPrefix}-cluster \
+    --task-definition ${PJPrefix}-batch-run-task \
+    --overrides '{"containerOverrides": [{"name":"laravel","command": ["sh","-c","php artisan -v"]}]}' \
+    --launch-type FARGATE \
+    --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_1}],securityGroups=[${SECURITY_GROUP}],assignPublicIp=ENABLED}"
 }
 
 
