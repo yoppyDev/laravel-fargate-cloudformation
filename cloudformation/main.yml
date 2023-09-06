@@ -100,10 +100,18 @@ Resources:
         PrivateSubnet1CIDR : !Sub "${PrivateSubnet1CIDR}"
         PrivateSubnet2CIDR : !Sub "${PrivateSubnet2CIDR}"
       TemplateURL: ./stacks/vpc.yml
+  # ------------ alb ----------------
+  alb:
+    Type      : AWS::CloudFormation::Stack
+    DependsOn : [vpc]
+    Properties:
+      Parameters:
+        PJPrefix : !Sub "${PJPrefix}"
+      TemplateURL: stacks/alb.yml
   # ------------ ecs ----------------
   ecs:
     Type      : AWS::CloudFormation::Stack
-    DependsOn : [vpc, iamRole, cloudwatch]
+    DependsOn : [vpc, iamRole, cloudwatch, alb]
     Properties:
       Parameters:
         PJPrefix : !Sub "${PJPrefix}"

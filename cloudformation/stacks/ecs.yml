@@ -109,8 +109,14 @@ Resources:
       ServiceName: !Sub "${PJPrefix}-service"
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSWebTaskDefinition
-      DesiredCount: 1
+      DesiredCount: 2
       LaunchType: FARGATE
+      loadBalancers:
+        - ContainerName: "nginx"
+          ContainerPort: 80
+          TargetGroupArn:
+            Fn::ImportValue:
+              !Sub "${PJPrefix}-target-group"
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED

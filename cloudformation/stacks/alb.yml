@@ -1,0 +1,82 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - ALB
+# - ALB Listener
+# - Target Group
+# ------------------------------------------------------------#
+
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create ALB and Target Group
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+Resources:
+  ALB:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        IpAddressType: ipv4
+        Name: !Sub "${PJPrefix}-alb"
+        Scheme: internet-facing
+        Subnets:
+          - Fn::ImportValue:
+              !Sub "${PJPrefix}-public-subnet-1"
+          - Fn::ImportValue:
+              !Sub "${PJPrefix}-public-subnet-2"
+        SecurityGroups:
+          - Fn::ImportValue:
+              !Sub "${PJPrefix}-SG"
+        Tags:
+          - Key: Name
+            Value: !Sub "${PJPrefix}-alb"
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${PJPrefix}-target-group"
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${PJPrefix}-vpc"
+      HealthCheckIntervalSeconds: 30
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: 200
+      TargetType: ip
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-target-group"
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+
+Outputs:
+  ALB:
+    Value: !Ref ALB
+    Export:
+      Name: !Sub "${PJPrefix}-alb"
+
+  ALBListener:
+    Value: !Ref ALBListener
+    Export:
+      Name: !Sub "${PJPrefix}-alb-listener"
+
+  TargetGroup:
+    Value: !Ref TargetGroup
+    Export:
+      Name: !Sub "${PJPrefix}-target-group"
