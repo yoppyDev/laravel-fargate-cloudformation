@@ -14,46 +14,46 @@ createProject()
 
 createBucket()
 {
-    aws s3api create-bucket --bucket ${S3_BUCKET} --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1
+    aws s3api create-bucket --bucket ${PJPrefix} --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1
 }
 
 createEcr()
 {
-    aws ecr create-repository --repository-name laravel --region ap-northeast-1
-    aws ecr create-repository --repository-name nginx --region ap-northeast-1
+    aws ecr create-repository --repository-name ${PJPrefix}/laravel --region ap-northeast-1
+    aws ecr create-repository --repository-name ${PJPrefix}/nginx --region ap-northeast-1
 }
 
 build()
 {
     docker build --platform=linux/amd64 \
-        -t laravel:latest \
+        -t ${PJPrefix}/laravel:latest \
         -f ./docker/laravel/Dockerfile .
 
     docker build --platform=linux/amd64 \
-        -t nginx:latest \
+        -t ${PJPrefix}/nginx:latest \
         -f ./docker/nginx/Dockerfile .
 }
 
 push()
 {
-    docker tag laravel:latest \
-        ${REGISTRY_URL}/laravel:latest
+    docker tag ${PJPrefix}/laravel:latest \
+        ${REGISTRY_URL}/${PJPrefix}/laravel:latest
 
-    docker tag nginx:latest \
-        ${REGISTRY_URL}/nginx:latest
+    docker tag ${PJPrefix}/nginx:latest \
+        ${REGISTRY_URL}/${PJPrefix}/nginx:latest
 
-    docker push ${REGISTRY_URL}/laravel:latest
-    docker push ${REGISTRY_URL}/nginx:latest
+    docker push ${REGISTRY_URL}/${PJPrefix}/laravel:latest
+    docker push ${REGISTRY_URL}/${PJPrefix}/nginx:latest
 }
 
 deploy()
 {
     aws cloudformation package \
         --template-file ./cloudformation/main.yml \
-        --s3-bucket ${S3_BUCKET} \
+        --s3-bucket ${PJPrefix} \
         --output-template-file ./cloudformation/output/main-stack.yml
 
-    rain deploy ./cloudformation/output/main-stack.yml laravel-templete
+    rain deploy ./cloudformation/output/main-stack.yml ${PJPrefix}
 }
 
 batch()

@@ -36,7 +36,7 @@ Resources:
       NetworkMode: "awsvpc"
       ContainerDefinitions:
         - Name: "nginx"
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/nginx:latest"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}/nginx:latest"
           Essential: true
           PortMappings:
             - ContainerPort: 80
@@ -53,7 +53,7 @@ Resources:
               awslogs-region: !Ref "AWS::Region"
               awslogs-stream-prefix: "nginx"
         - Name: "laravel"
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/laravel:latest"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}/laravel:latest"
           Essential: true
           Environment:
             - Name: "APP_ENV"
@@ -84,7 +84,7 @@ Resources:
       NetworkMode: "awsvpc"
       ContainerDefinitions:
         - Name: "laravel"
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/laravel:latest"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}/laravel:latest"
           Essential: true
           Environment:
             - Name: "APP_ENV"

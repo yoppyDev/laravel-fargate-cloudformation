@@ -29,11 +29,11 @@ Metadata:
         Parameters:
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
-      # - Label:
-      #     default: PrivateSubnet
-      #   Parameters:
-      #     - PrivateSubnet1CIDR
-      #     - PrivateSubnet1CIDR
+      - Label:
+          default: PrivateSubnet
+        Parameters:
+          - PrivateSubnet1CIDR
+          - PrivateSubnet1CIDR
 
 # ------------------------------------------------------------#
 # Input Parameters
@@ -41,7 +41,7 @@ Metadata:
 Parameters:
   PJPrefix:
     Type: String
-    Default: Laravel
+    Default: laravel-template
     ConstraintDescription: Invalid input value for the PJPrefix.
 
   VPCCIDR:
@@ -54,7 +54,7 @@ Parameters:
 
   PublicSubnet1CIDR:
     Type: String
-    Default: 10.0.0.0/24
+    Default: 10.0.10.0/24
     MinLength: 9
     MaxLength: 18
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
@@ -62,27 +62,27 @@ Parameters:
 
   PublicSubnet2CIDR:
     Type: String
-    Default: 10.0.1.0/24
+    Default: 10.0.11.0/24
     MinLength: 9
     MaxLength: 18
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     ConstraintDescription: must be a valid PublicSubnet2CidrBlock.
 
-  # PrivateSubnet1CIDR:
-  #   Type: String
-  #   Default: 10.1.4.0/24
-  #   MinLength: 9
-  #   MaxLength: 18
-  #   AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-  #   ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.0.20.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
 
-  # PrivateSubnet2CIDR:
-  #   Type: String
-  #   Default: 10.1.5.0/24
-  #   MinLength: 9
-  #   MaxLength: 18
-  #   AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-  #   ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.0.21.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
 
 Resources:
 # ------------------------------------------------------------#
@@ -142,27 +142,27 @@ Resources:
         - Key: Name
           Value: !Sub "${PJPrefix}-public-subnet-2"
 
-# # Private SubnetA Create
-#   PrivateSubnet1:
-#     Type: "AWS::EC2::Subnet"
-#     Properties:
-#       AvailabilityZone: !Select [ 0, !GetAZs ]
-#       CidrBlock: !Ref PrivateSubnet1CIDR
-#       VpcId: !Ref VPC
-#       Tags:
-#         - Key: Name
-#           Value: !Sub "${PJPrefix}-private-subnet-1"
+# Private SubnetA Create
+  PrivateSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-subnet-1"
 
-# # Private SubnetC Create
-#   PrivateSubnet2:
-#     Type: "AWS::EC2::Subnet"
-#     Properties:
-#       AvailabilityZone: !Select [ 1, !GetAZs ]
-#       CidrBlock: !Ref PrivateSubnet2CIDR
-#       VpcId: !Ref VPC
-#       Tags:
-#         - Key: Name
-#           Value: !Sub "${PJPrefix}-private-subnet-2"
+# Private SubnetC Create
+  PrivateSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs ]
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-subnet-2"
 
 # ------------------------------------------------------------#
 #  RouteTable
@@ -185,23 +185,23 @@ Resources:
         - Key: Name
           Value: !Sub "${PJPrefix}-public-route-2"
 
-# # Private RouteTable1 Create
-#   PrivateRouteTable1:
-#     Type: "AWS::EC2::RouteTable"
-#     Properties:
-#       VpcId: !Ref VPC
-#       Tags:
-#         - Key: Name
-#           Value: !Sub "${PJPrefix}-private-route-1"
+# Private RouteTable1 Create
+  PrivateRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-route-1"
 
-# # Private RouteTable2 Create
-#   PrivateRouteTable2:
-#     Type: "AWS::EC2::RouteTable"
-#     Properties:
-#       VpcId: !Ref VPC
-#       Tags:
-#         - Key: Name
-#           Value: !Sub "${PJPrefix}-private-route-2"
+# Private RouteTable2 Create
+  PrivateRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-route-2"
 
 # ------------------------------------------------------------#
 # Routing
@@ -239,19 +239,19 @@ Resources:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable2
 
-# # PrivateRouteTable Associate Subnet1
-#   PrivateSubnet1RouteTableAssociation:
-#     Type: "AWS::EC2::SubnetRouteTableAssociation"
-#     Properties:
-#       SubnetId: !Ref PrivateSubnet1
-#       RouteTableId: !Ref PrivateRouteTable1
+# PrivateRouteTable Associate Subnet1
+  PrivateSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable1
 
-# # PrivateRouteTable Associate Subnet2
-#   PrivateSubnet1RouteTableAssociation:
-#     Type: "AWS::EC2::SubnetRouteTableAssociation"
-#     Properties:
-#       SubnetId: !Ref PrivateSubnet1
-#       RouteTableId: !Ref PrivateRouteTable2
+# PrivateRouteTable Associate Subnet2
+  PrivateSubne21RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable2
 
   # ------------------------------------------------------------#
   #  SecurityGroup
@@ -274,16 +274,6 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
         - Description: Enable HTTP access via port 80 IPv6
-          IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIpv6: ::/0
-        - Description: Enable HTTPS access via port 443 IPv4
-          IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-        - Description: Enable HTTPS access via port 443 IPv6
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
@@ -328,25 +318,25 @@ Outputs:
     Export:
       Name: !Sub "${PJPrefix}-public-subnet-2-cidr"
 
-  # PrivateSubnet1:
-  #   Value: !Ref PrivateSubnet1
-  #   Export:
-  #     Name: !Sub "${PJPrefix}-private-subnet-1"
+  PrivateSubnet1:
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-1"
 
-  # PrivateSubnet1CIDR:
-  #   Value: !Ref PrivateSubnet1CIDR
-  #   Export:
-  #     Name: !Sub "${PJPrefix}-private-subnet-1-cidr"
+  PrivateSubnet1CIDR:
+    Value: !Ref PrivateSubnet1CIDR
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-1-cidr"
 
-  # PrivateSubnet2:
-  #   Value: !Ref PrivateSubnet2
-  #   Export:
-  #     Name: !Sub "${PJPrefix}-private-subnet-2"
+  PrivateSubnet2:
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-2"
 
-  # PrivateSubnet2CIDR:
-  #   Value: !Ref PrivateSubnet2CIDR
-  #   Export:
-  #     Name: !Sub "${PJPrefix}-private-subnet-2-cidr"
+  PrivateSubnet2CIDR:
+    Value: !Ref PrivateSubnet2CIDR
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-2-cidr"
 
 # Route
   PublicRouteTable1:
@@ -359,15 +349,15 @@ Outputs:
     Export:
       Name: !Sub "${PJPrefix}-public-route-1"
 
-  # PrivateRouteTable2:
-  #   Value: !Ref PrivateRouteTable2
-  #   Export:
-  #     Name: !Sub "${PJPrefix}-private-route-2"
+  PrivateRouteTable2:
+    Value: !Ref PrivateRouteTable2
+    Export:
+      Name: !Sub "${PJPrefix}-private-route-2"
 
-  # PrivateRouteTable2:
-  #   Value: !Ref PrivateRouteTable2
-  #   Export:
-  #     Name: !Sub "${PJPrefix}-private-route-2"
+  PrivateRouteTable2:
+    Value: !Ref PrivateRouteTable2
+    Export:
+      Name: !Sub "${PJPrefix}-private-route-2"
 
 # SG
   SG:

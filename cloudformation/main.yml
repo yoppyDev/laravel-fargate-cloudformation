@@ -21,16 +21,16 @@ Metadata:
         Parameters:
           - PublicSubnet1CIDR
           - PublicSubnet2CIDR
-      # - Label:
-      #     default: PrivateSubnet
-      #   Parameters:
-      #     - PrivateSubnet1CIDR
-      #     - PrivateSubnet1CIDR
+      - Label:
+          default: PrivateSubnet
+        Parameters:
+          - PrivateSubnet1CIDR
+          - PrivateSubnet1CIDR
 
 Parameters:
   PJPrefix:
     Type: String
-    Default: laravel
+    Default: laravel-template
     ConstraintDescription: Invalid input value for the PJPrefix.
 
   VPCCIDR:
@@ -43,7 +43,7 @@ Parameters:
 
   PublicSubnet1CIDR:
     Type: String
-    Default: 10.0.0.0/24
+    Default: 10.0.10.0/24
     MinLength: 9
     MaxLength: 18
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
@@ -51,27 +51,27 @@ Parameters:
 
   PublicSubnet2CIDR:
     Type: String
-    Default: 10.0.1.0/24
+    Default: 10.0.11.0/24
     MinLength: 9
     MaxLength: 18
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     ConstraintDescription: must be a valid PublicSubnet2CidrBlock.
 
-  # PrivateSubnet1CIDR:
-  #   Type: String
-  #   Default: 10.1.4.0/24
-  #   MinLength: 9
-  #   MaxLength: 18
-  #   AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-  #   ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.0.20.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
 
-  # PrivateSubnet2CIDR:
-  #   Type: String
-  #   Default: 10.1.5.0/24
-  #   MinLength: 9
-  #   MaxLength: 18
-  #   AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
-  #   ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.0.21.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
 
 Resources:
   # ------------ IAM Role ----------------
@@ -97,8 +97,8 @@ Resources:
         VPCCIDR : !Sub "${VPCCIDR}"
         PublicSubnet1CIDR : !Sub "${PublicSubnet1CIDR}"
         PublicSubnet2CIDR : !Sub "${PublicSubnet2CIDR}"
-        # PrivateSubnet1CIDR : !Sub "${PrivateSubnet1CIDR}"
-        # PrivateSubnet2CIDR : !Sub "${PrivateSubnet2CIDR}"
+        PrivateSubnet1CIDR : !Sub "${PrivateSubnet1CIDR}"
+        PrivateSubnet2CIDR : !Sub "${PrivateSubnet2CIDR}"
       TemplateURL: ./stacks/vpc.yml
   # ------------ ecs ----------------
   ecs:
