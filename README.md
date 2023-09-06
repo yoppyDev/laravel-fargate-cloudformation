@@ -14,6 +14,7 @@ sh tools/util.sh createEcr
 ```
 4. buildしてpush
 ```
+sh tools/aws-ecr-login.sh
 sh tools/util.sh build
 sh tools/util.sh push
 ```
