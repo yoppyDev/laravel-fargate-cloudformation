@@ -14,13 +14,13 @@ createProject()
 
 createBucket()
 {
-    aws s3api create-bucket --bucket ${PJPrefix} --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1
+    aws s3api create-bucket --bucket ${PJPrefix} --region ${REGIN} --create-bucket-configuration LocationConstraint=${REGIN} --profile ${AWS_PROFILE}
 }
 
 createEcr()
 {
-    aws ecr create-repository --repository-name ${PJPrefix}/laravel --region ap-northeast-1
-    aws ecr create-repository --repository-name ${PJPrefix}/nginx --region ap-northeast-1
+    aws ecr create-repository --repository-name ${PJPrefix}/laravel --region ${REGIN} --profile ${AWS_PROFILE}
+    aws ecr create-repository --repository-name ${PJPrefix}/nginx --region ${REGIN} --profile ${AWS_PROFILE}
 }
 
 build()
@@ -51,9 +51,11 @@ deploy()
     aws cloudformation package \
         --template-file ./cloudformation/main.yml \
         --s3-bucket ${PJPrefix} \
-        --output-template-file ./cloudformation/output/main-stack.yml
+        --output-template-file ./cloudformation/output/main-stack.yml \
+        --profile ${AWS_PROFILE} \
+        --region ${REGIN}
 
-    rain deploy ./cloudformation/output/main-stack.yml ${PJPrefix}
+    rain deploy ./cloudformation/output/main-stack.yml ${PJPrefix} --profile ${AWS_PROFILE}
 }
 
 batch()
@@ -63,7 +65,9 @@ batch()
     --task-definition ${PJPrefix}-batch-run-task \
     --overrides '{"containerOverrides": [{"name":"laravel","command": ["sh","-c","php artisan -v"]}]}' \
     --launch-type FARGATE \
-    --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_1}],securityGroups=[${SECURITY_GROUP}],assignPublicIp=ENABLED}"
+    --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_1}],securityGroups=[${SECURITY_GROUP}],assignPublicIp=ENABLED}" \
+    --region ${REGIN} \
+    --profile ${AWS_PROFILE}
 }
 
 

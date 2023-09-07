@@ -71,6 +71,11 @@ Outputs:
     Export:
       Name: !Sub "${PJPrefix}-alb"
 
+  DNSName:
+    Value: !GetAtt ALB.DNSName
+    Export:
+      Name: !Sub "${PJPrefix}-alb-dns-name"
+
   ALBListener:
     Value: !Ref ALBListener
     Export:
