@@ -13,6 +13,9 @@ services:
       - 8080
     depends_on:
       - laravel
+    networks:
+      - laravel
+
   laravel:
     image: ${REGISTRY_URL}/${PJPrefix}/laravel:latest
     platform: linux/x86_64
