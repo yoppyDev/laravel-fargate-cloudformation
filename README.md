@@ -4,25 +4,25 @@
 cp .env.example .env
 ```
 2. .envファイルにそれぞれの値を入力
-3. Laravelプロジェクト作成
+3. ~~Laravelプロジェクト作成~~ (srcを追加したので不要になった)
 ```
 sh tools/util.sh createProject
 ```
-3. ECR作成
+4. ECR作成
 ```
 sh tools/util.sh createEcr
 ```
-4. buildしてpush
+5. buildしてpush
 ```
 sh tools/aws-ecr-login.sh
 sh tools/util.sh build
 sh tools/util.sh push
 ```
-3. S3バケット作成
+6. S3バケット作成
 ```
 sh tools/util.sh createBucket
 ```
-5. デプロイ
+7. デプロイ
 ```
 sh tools/util.sh deploy
 ```
@@ -41,6 +41,7 @@ sh tools/util.sh deploy
 |   |- ecs.yml
 |   |- iam.yml
 |   |- vpc.yml
+|   |- alb.yml
 |- tools
 |   |- util.sh
 |   |- aws-ecr-login.sh
