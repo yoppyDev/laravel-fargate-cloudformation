@@ -122,9 +122,9 @@ Resources:
           AssignPublicIp: ENABLED
           Subnets:
             - Fn::ImportValue:
-                !Sub "${PJPrefix}-public-subnet-1"
+                !Sub "${PJPrefix}-private-subnet-1"
             - Fn::ImportValue:
-                !Sub "${PJPrefix}-public-subnet-2"
+                !Sub "${PJPrefix}-private-subnet-2"
           SecurityGroups:
             - Fn::ImportValue:
                 !Sub "${PJPrefix}-SG"
