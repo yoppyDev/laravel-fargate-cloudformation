@@ -3,6 +3,8 @@
 
 ![Alt text](InfrastructureConfiguration.png)
 
+出典：https://aws.amazon.com/jp/cdp/ec-container/
+
 ## 手順
 1. .envファイルを作成
 ```
