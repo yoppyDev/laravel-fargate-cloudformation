@@ -1,3 +1,8 @@
+## インフラ構成
+赤で囲っている部分の設定は完了している
+
+![Alt text](InfrastructureConfiguration.png)
+
 ## 手順
 1. .envファイルを作成
 ```
@@ -31,28 +36,8 @@ sh tools/util.sh createBucket
 sh tools/util.sh deploy
 ```
 
-## ディレクトリ構成
-```
-|- docker
-|   |- composer
-|   |- laravel
-|   |- nginx
-|- output
-|- src
-|- stacks
-|   |- cloudwatch.yml
-|   |- ecr.yml
-|   |- ecs.yml
-|   |- iam.yml
-|   |- vpc.yml
-|   |- alb.yml
-|- tools
-|   |- util.sh
-|   |- aws-ecr-login.sh
-|- .env.example
-|- .gitignore
-|- docker-compose.yml
-```
 
-## インフラ構成
-AZ : ap-northeast-1
+
+## スクラップ
+
+https://zenn.dev/yoppy/scraps/e310e607c0b1fb
