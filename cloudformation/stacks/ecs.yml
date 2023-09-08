@@ -14,6 +14,14 @@ Parameters:
     Type: String
     Default: laravel
     ConstraintDescription: Invalid input value for the PJPrefix.
+  AppKey:
+    Type   : String
+  DatabaseName:
+    Type   : String
+  MasterUsername:
+    Type   : String
+  MasterUserPassword:
+    Type   : String
 
 Resources:
   # ECS Cluster
@@ -42,6 +50,19 @@ Resources:
             - ContainerPort: 80
               HostPort: 80
               Protocol: "tcp"
+          Environment:
+          - Name: "APP_KEY"
+            Value: !Sub "{{resolve:ssm:${AppKey}}}"
+          - Name: "DB_HOST"
+            Value:
+              Fn::ImportValue:
+                !Sub "${PJPrefix}-rds-endpoint"
+          - Name: "DB_DATABASE"
+            Value: !Sub "{{resolve:ssm:${DatabaseName}}}"
+          - Name: "DB_USERNAME"
+            Value: !Sub "{{resolve:ssm:${MasterUsername}}}"
+          - Name: "DB_PASSWORD"
+            Value: !Sub "{{resolve:ssm:${MasterUserPassword}}}"
           DependsOn:
             - ContainerName: "laravel"
               Condition: "START"

@@ -1,0 +1,94 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - DBSubnetGroup
+# - DBClusterParameterGroup
+# - DBCluster
+# - DBInstance
+# ------------------------------------------------------------#
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create RDS
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+  DatabaseName:
+    Type   : String
+  MasterUsername:
+    Type   : String
+  MasterUserPassword:
+    Type   : String
+
+Resources:
+  # RDSを配置するサブネットを指定
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: !Sub "${PJPrefix}-subnet-group"
+      SubnetIds:
+        - Fn::ImportValue:
+            !Sub "${PJPrefix}-private-subnet-1"
+        - Fn::ImportValue:
+            !Sub "${PJPrefix}-private-subnet-2"
+
+  # RDSクラスターの動作と設定を制御するためのパラメータのセットを定義
+  ClusterParameterGroup:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Description: !Sub "${PJPrefix}-parameter-group"
+      Family : "aurora-mysql8.0"
+      Parameters:
+        time_zone               : Asia/Tokyo
+        character_set_client    : utf8
+        character_set_connection: utf8
+        character_set_database  : utf8
+        character_set_results   : utf8
+        character_set_server    : utf8
+
+  # RDSインスタンスと共有のデータベースエンジンとストレージをグループ化
+  RDSCluster:
+    Type: AWS::RDS::DBCluster
+    DependsOn: DBSubnetGroup
+    Properties:
+      DBClusterIdentifier        : !Sub "${PJPrefix}-cluster"
+      DBClusterParameterGroupName: !Ref ClusterParameterGroup
+      DBSubnetGroupName          : !Ref DBSubnetGroup
+      Engine                     : "aurora-mysql"
+      DatabaseName               : !Sub "{{resolve:ssm:${DatabaseName}}}"
+      MasterUsername             : !Sub "{{resolve:ssm:${MasterUsername}}}"
+      MasterUserPassword         : !Sub "{{resolve:ssm:${MasterUserPassword}}}"
+      Port                       : 3306
+      PreferredBackupWindow      : "07:00-09:00"
+      PreferredMaintenanceWindow : sun:05:00-sun:05:30
+
+ # 個別のRDSインスタンスの設定を定義
+  RDSInstancePrimary:
+    Type: AWS::RDS::DBInstance
+    DependsOn: RDSCluster
+    Properties:
+      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance"
+      DBInstanceClass             : "db.t4g.medium"
+      Engine                      : "aurora-mysql"
+      AvailabilityZone            : !Sub "${AWS::Region}a"
+      DBClusterIdentifier         : !Ref RDSCluster
+      DBSubnetGroupName           : !Ref DBSubnetGroup
+      PromotionTier               : 1
+
+  RDSInstanceSecondary:
+    Type: AWS::RDS::DBInstance
+    DependsOn: RDSCluster
+    Properties:
+      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance"
+      DBInstanceClass             : "db.t4g.medium"
+      Engine                      : "aurora-mysql"
+      AvailabilityZone            : !Sub "${AWS::Region}c"
+      DBClusterIdentifier         : !Ref RDSCluster
+      DBSubnetGroupName           : !Ref DBSubnetGroup
+      PromotionTier               : 2
+
+Outputs:
+  RDSEndpoint:
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub "${PJPrefix}-rds-endpoint"

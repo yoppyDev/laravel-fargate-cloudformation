@@ -8,21 +8,25 @@ cp .env.example .env
 ```
 sh tools/util.sh createProject
 ```
-4. ECR作成
+4. ParameterStore作成
+```
+sh tools/util.sh createSystemParameter
+```
+5. ECR作成
 ```
 sh tools/util.sh createEcr
 ```
-5. buildしてpush
+6. buildしてpush
 ```
 sh tools/aws-ecr-login.sh
 sh tools/util.sh build
 sh tools/util.sh push
 ```
-6. S3バケット作成
+7. S3バケット作成
 ```
 sh tools/util.sh createBucket
 ```
-7. デプロイ
+8. デプロイ
 ```
 sh tools/util.sh deploy
 ```

@@ -79,21 +79,21 @@ Resources:
     Type      : AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        PJPrefix : !Sub "${PJPrefix}"
+        PJPrefix : !Ref PJPrefix
       TemplateURL: ./stacks/iam-role.yml
   # ------------ cloudwatch ----------------
   cloudwatch:
     Type      : AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        PJPrefix : !Sub "${PJPrefix}"
+        PJPrefix : !Ref PJPrefix
       TemplateURL: ./stacks/cloudwatch.yml
   # ------------ vpx ----------------
   vpc:
     Type      : AWS::CloudFormation::Stack
     Properties:
       Parameters:
-        PJPrefix : !Sub "${PJPrefix}"
+        PJPrefix : !Ref PJPrefix
         VPCCIDR : !Sub "${VPCCIDR}"
         PublicSubnet1CIDR : !Sub "${PublicSubnet1CIDR}"
         PublicSubnet2CIDR : !Sub "${PublicSubnet2CIDR}"
@@ -106,13 +106,28 @@ Resources:
     DependsOn : [vpc]
     Properties:
       Parameters:
-        PJPrefix : !Sub "${PJPrefix}"
+        PJPrefix : !Ref PJPrefix
       TemplateURL: stacks/alb.yml
+  # ------------ rds ----------------
+  rds:
+    Type      : AWS::CloudFormation::Stack
+    DependsOn : [vpc]
+    Properties:
+      Parameters:
+        PJPrefix : !Ref PJPrefix
+        DatabaseName : !Sub "/${PJPrefix}/database"
+        MasterUsername : !Sub "/${PJPrefix}/master/username"
+        MasterUserPassword : !Sub "/${PJPrefix}/master/password"
+      TemplateURL: stacks/rds.yml
   # ------------ ecs ----------------
   ecs:
     Type      : AWS::CloudFormation::Stack
-    DependsOn : [vpc, iamRole, cloudwatch, alb]
+    DependsOn : [vpc, iamRole, cloudwatch, alb, rds]
     Properties:
       Parameters:
-        PJPrefix : !Sub "${PJPrefix}"
+        PJPrefix : !Ref PJPrefix
+        AppKey : !Sub "/${PJPrefix}/APP_KEY"
+        DatabaseName : !Sub "/${PJPrefix}/database"
+        MasterUsername : !Sub "/${PJPrefix}/master/username"
+        MasterUserPassword : !Sub "/${PJPrefix}/master/password"
       TemplateURL: stacks/ecs.yml
