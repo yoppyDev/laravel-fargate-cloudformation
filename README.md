@@ -1,5 +1,5 @@
 ## インフラ構成
-赤で囲っている部分の設定は完了している
+赤で囲っている部分のリソースを作成する
 
 ![Alt text](InfrastructureConfiguration.png)
 
