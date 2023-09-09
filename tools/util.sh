@@ -27,7 +27,7 @@ createSystemParameter()
 {
     aws ssm put-parameter --name "/${PJPrefix}/APP_KEY" --value "${APP_KEY}" --type String --region ${REGIN} --profile ${AWS_PROFILE}
     aws ssm put-parameter --name "/${PJPrefix}/database" --value "${DATABASE}" --type String --region ${REGIN} --profile ${AWS_PROFILE}
-    aws ssm put-parameter --name "/${PJPrefix}/master/username" --value "${DB_USER_NAME}" --type String --region ${REGIN} --profile ${AWS_PROFILE}
+    aws ssm put-parameter --name "/${PJPrefix}/master/username" --value "${DB_USERNAME}" --type String --region ${REGIN} --profile ${AWS_PROFILE}
     aws ssm put-parameter --name "/${PJPrefix}/master/password" --value "${DB_PASSWORD}" --type String --region ${REGIN} --profile ${AWS_PROFILE}
 }
 
