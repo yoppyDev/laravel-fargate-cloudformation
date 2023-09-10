@@ -67,7 +67,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     DependsOn: RDSCluster
     Properties:
-      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance"
+      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance-primary"
       DBInstanceClass             : "db.t4g.medium"
       Engine                      : "aurora-mysql"
       AvailabilityZone            : !Sub "${AWS::Region}a"
@@ -79,7 +79,7 @@ Resources:
     Type: AWS::RDS::DBInstance
     DependsOn: RDSCluster
     Properties:
-      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance"
+      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance-secondary"
       DBInstanceClass             : "db.t4g.medium"
       Engine                      : "aurora-mysql"
       AvailabilityZone            : !Sub "${AWS::Region}c"
@@ -89,6 +89,6 @@ Resources:
 
 Outputs:
   RDSEndpoint:
-    Value: !GetAtt RDSInstance.Endpoint.Address
+    Value: !GetAtt RDSInstancePrimary.Endpoint.Address
     Export:
       Name: !Sub "${PJPrefix}-rds-endpoint"

@@ -1,10 +1,9 @@
-FROM node:14 as node-build
+FROM node:18 as node-build
 COPY ./src /application
 WORKDIR /application
 RUN apt-get update
 RUN npm install \
-    && npm run prod
-
+    npm run build
 
 FROM nginx:alpine
 

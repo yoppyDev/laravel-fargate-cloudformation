@@ -35,6 +35,10 @@ createSystemParameter()
 build()
 {
     docker build --platform=linux/amd64 \
+        -t composer:latest \
+        -f ./docker/composer/Dockerfile .
+
+    docker build --platform=linux/amd64 \
         -t ${PJPrefix}/laravel:latest \
         -f ./docker/laravel/Dockerfile .
 
