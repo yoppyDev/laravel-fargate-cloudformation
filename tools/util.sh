@@ -9,7 +9,7 @@ createProject()
         -t composer:latest \
         -f ./docker/composer/Dockerfile .
 
-    docker run -v $(pwd):/application composer:latest composer create-project --prefer-dist laravel/laravel src
+    docker run -v $(pwd):/application composer:latest composer create-project --prefer-dist "laravel/laravel=10.*" src
 }
 
 createBucket()
