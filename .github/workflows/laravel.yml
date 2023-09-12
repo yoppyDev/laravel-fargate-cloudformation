@@ -1,0 +1,57 @@
+name: Laravel
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./laravel
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: laravel
+          MYSQL_ROOT_PASSWORD: root
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
+        ports:
+          - 33306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+
+    - name: Verify MySQL connection
+      run: |
+        mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -uuser -psecret -e "SHOW DATABASES"
+
+    - name: Install dependencies
+      run: |
+        php --version
+        composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+        chmod -R 777 storage bootstrap/cache
+
+    - name: Boot Laravel application
+      run: |
+        php -r "file_exists('.env') || copy('.env.example', '.env');"
+        php artisan key:generate
+        php artisan --version
+
+    - name: Execute PHPUnit tests
+      env:
+        DB_CONNECTION: mysql
+        DB_DATABASE: laravel
+        DB_PORT: 33306
+        DB_USER: root
+        DB_PASSWORD: password
+      run: |
+        php artisan migrate:fresh --seed
+        ./vendor/bin/phpunit
