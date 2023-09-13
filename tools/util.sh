@@ -7,7 +7,7 @@ createProject()
 {
     docker build --platform=linux/amd64 \
         -t composer:latest \
-        -f ./docker/composer/Dockerfile .
+        -f ./docker/base/composer/Dockerfile .
 
     docker run -v $(pwd):/application composer:latest composer create-project --prefer-dist "laravel/laravel=10.*" src
 }
@@ -40,11 +40,11 @@ build()
 
     docker build --platform=linux/amd64 \
         -t ${PJPrefix}/laravel:latest \
-        -f ./docker/laravel/Dockerfile .
+        -f ./docker/base/laravel/Dockerfile .
 
     docker build --platform=linux/amd64 \
         -t ${PJPrefix}/nginx:latest \
-        -f ./docker/nginx/Dockerfile .
+        -f ./docker/base/nginx/Dockerfile .
 }
 
 push()
