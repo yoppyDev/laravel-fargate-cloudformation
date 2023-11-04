@@ -7,7 +7,7 @@ createProject()
 {
     docker build --platform=linux/amd64 \
         -t composer:latest \
-        -f ./docker/composer/Dockerfile .
+        -f ./docker/base/composer/Dockerfile .
 
     docker run -v $(pwd):/application composer:latest composer create-project --prefer-dist "laravel/laravel=10.*" src
 }
@@ -32,31 +32,36 @@ createSystemParameter()
 }
 
 
+baseBuild()
+{
+    docker build --platform=linux/amd64 \
+        -t ${PJPrefix}/base-nginx:latest \
+        -f ./docker/base/nginx/Dockerfile .
+}
+
+basePush()
+{
+    docker tag ${PJPrefix}/base-nginx:latest \
+        ${REGISTRY_URL}/${PJPrefix}/base-nginx:latest
+
+    docker push ${REGISTRY_URL}/${PJPrefix}/base-nginx:latest
+}
+
 build()
 {
     docker build --platform=linux/amd64 \
-        -t composer:latest \
-        -f ./docker/composer/Dockerfile .
-
-    docker build --platform=linux/amd64 \
-        -t ${PJPrefix}/laravel:latest \
-        -f ./docker/laravel/Dockerfile .
-
-    docker build --platform=linux/amd64 \
-        -t ${PJPrefix}/nginx:latest \
-        -f ./docker/nginx/Dockerfile .
+        --build-arg AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID} \
+        --build-arg PJPrefix=${PJPrefix} \
+        -t ${PJPrefix}/build-nginx:latest \
+        -f ./docker/build/nginx/Dockerfile .
 }
 
 push()
 {
-    docker tag ${PJPrefix}/laravel:latest \
-        ${REGISTRY_URL}/${PJPrefix}/laravel:latest
+    docker tag ${PJPrefix}/build-nginx:latest \
+        ${REGISTRY_URL}/${PJPrefix}/build-nginx:latest
 
-    docker tag ${PJPrefix}/nginx:latest \
-        ${REGISTRY_URL}/${PJPrefix}/nginx:latest
-
-    docker push ${REGISTRY_URL}/${PJPrefix}/laravel:latest
-    docker push ${REGISTRY_URL}/${PJPrefix}/nginx:latest
+    docker push ${REGISTRY_URL}/${PJPrefix}/build-nginx:latest
 }
 
 deploy()
