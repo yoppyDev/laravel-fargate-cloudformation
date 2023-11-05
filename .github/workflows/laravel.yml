@@ -25,46 +25,76 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - uses: actions/checkout@v1
-      with:
-        fetch-depth: 1
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
 
-    - name: Verify MySQL connection
-      run: |
-        mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u user -ppassword -e "SHOW DATABASES"
+      - name: Verify MySQL connection
+        run: |
+          mysql --host 127.0.0.1 --port ${{ job.services.mysql.ports['3306'] }} -u user -ppassword -e "SHOW DATABASES"
 
-    - name: Install dependencies
-      run: |
-        php --version
-        composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
-        chmod -R 777 storage bootstrap/cache
+      - name: Install dependencies
+        run: |
+          php --version
+          composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          chmod -R 777 storage bootstrap/cache
 
-    - name: Boot Laravel application
-      run: |
-        php -r "file_exists('.env') || copy('.env.example', '.env');"
-        php artisan key:generate
-        php artisan --version
+      - name: Boot Laravel application
+        run: |
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          php artisan key:generate
+          php artisan --version
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18'
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
 
-    - name: Install Node.js dependencies
-      run: npm install
+      - name: Install Node.js dependencies
+        run: npm install
 
-    - name: Build Vite assets
-      run: npm run build
+      - name: Build Vite assets
+        run: npm run build
 
-    - name: Execute PHPUnit tests
-      env:
-        APP_ENV: testing
-        DB_CONNECTION: mysql
-        DB_HOST: 127.0.0.1
-        DB_DATABASE: laravel
-        DB_PORT: ${{ job.services.mysql.ports['3306'] }}
-        DB_USER: user
-        DB_PASSWORD: password
-      run: |
-        php artisan migrate
-        ./vendor/bin/phpunit ./tests
+      - name: Execute PHPUnit tests
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_DATABASE: laravel
+          DB_PORT: ${{ job.services.mysql.ports['3306'] }}
+          DB_USER: user
+          DB_PASSWORD: password
+        run: |
+          php artisan migrate
+          ./vendor/bin/phpunit ./tests
+
+  building:
+    needs: phpunit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-and-push-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          # Nginx
+          sh ./tools/util.sh build
+          sh ./tools/util.sh push
+
+
