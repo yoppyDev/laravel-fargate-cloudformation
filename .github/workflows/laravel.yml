@@ -87,7 +87,7 @@ jobs:
           ./vendor/bin/phpunit ./tests
 
   building:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'push'
     needs: phpunit
     runs-on: ubuntu-latest
 
@@ -119,4 +119,4 @@ jobs:
 
       - name: Deploy Amazon ECS task definition
         run:
-          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --task-definition ${{ env.TASK_DEFINITION }}
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --task-definition ${{ env.TASK_DEFINITION }} --force-new-deployment
