@@ -14,7 +14,7 @@ env:
   TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
   ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
   ECS_SERVICE: ${{ vars.ECS_SERVICE }}
-  PJ_PREFIX: ${{ vars.PJPrefix }}
+  PJ_PREFIX: ${{ vars.PJ_PREFIX }}
   AWS_REGION: ${{ vars.AWS_REGION }}
 
 permissions:
