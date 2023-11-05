@@ -92,9 +92,17 @@ jobs:
         id: build-and-push-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          PJPrefix: laravel-template
         run: |
           # Nginx
-          sh ./tools/util.sh build
-          sh ./tools/util.sh push
+
+          docker build --platform=linux/amd64 \
+            --build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID \
+            --build-arg PJPrefix=$PJPrefix \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY/build-nginx:latest \
+            -f ./docker/build/nginx/Dockerfile .
+
+          docker push $ECR_REGISTRY/$PJPrefix/build-nginx:latest
 
 
