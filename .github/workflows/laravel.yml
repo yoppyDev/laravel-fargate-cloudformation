@@ -3,9 +3,26 @@ name: Laravel
 on:
   pull_request:
     branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+  TASK_DEFINITION: ${{ vars.TASK_DEFINITION }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+  PJ_PREFIX: ${{ vars.PJPrefix }}
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+permissions:
+  contents: read
 
 jobs:
   phpunit:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -70,6 +87,7 @@ jobs:
           ./vendor/bin/phpunit ./tests
 
   building:
+    if: github.event_name == 'pull_request'
     needs: phpunit
     runs-on: ubuntu-latest
 
@@ -80,9 +98,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-1
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -90,19 +108,19 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-and-push-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          PJPrefix: laravel-template
         run: |
           # Nginx
-
           docker build --platform=linux/amd64 \
             --build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID \
-            --build-arg PJPrefix=$PJPrefix \
-            -t $ECR_REGISTRY/$PJPrefix/build-nginx:latest \
+            --build-arg PJPrefix=${{ env.PJ_PREFIX }} \
+            -t ${{ env.ECR_REGISTRY }}:latest \
             -f ./docker/build/nginx/Dockerfile .
+          docker push ${{ env.ECR_REGISTRY }}:latest
 
-          docker push $ECR_REGISTRY/$PJPrefix/build-nginx:latest
-
-
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ env.TASK_DEFINITION }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
