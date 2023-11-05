@@ -22,7 +22,6 @@ permissions:
 
 jobs:
   phpunit:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     defaults:
       run:
