@@ -100,9 +100,9 @@ jobs:
           docker build --platform=linux/amd64 \
             --build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID \
             --build-arg PJPrefix=$PJPrefix \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY/build-nginx:latest \
+            -t $ECR_REGISTRY$ECR_REPOSITORY/build-nginx:latest \
             -f ./docker/build/nginx/Dockerfile .
 
-          docker push $ECR_REGISTRY/$PJPrefix/build-nginx:latest
+          docker push $ECR_REGISTRY$PJPrefix/build-nginx:latest
 
 
