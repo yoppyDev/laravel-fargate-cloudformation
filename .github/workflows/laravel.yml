@@ -111,7 +111,7 @@ jobs:
         run: |
           # Nginx
           docker build --platform=linux/amd64 \
-            --build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID \
+            --build-arg AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID }} \
             --build-arg PJPrefix=${{ env.PJ_PREFIX }} \
             -t ${{ env.ECR_REGISTRY }}:latest \
             -f ./docker/build/nginx/Dockerfile .
