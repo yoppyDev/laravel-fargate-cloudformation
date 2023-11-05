@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
   nginx:
-    image: laravel-template/build-nginx
+    image: ${REGISTRY_URL}/${PJPrefix}/build-nginx:latest
     platform: linux/x86_64
     container_name: ${PJPrefix}-nginx
     ports:
