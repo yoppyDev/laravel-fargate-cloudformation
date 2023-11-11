@@ -1,0 +1,35 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - CloudWatch LogGroup
+# ------------------------------------------------------------#
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create CloudWatch LogGroup
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+Resources:
+# ------------------------------------------------------------#
+#  LogGroup
+# ------------------------------------------------------------#
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${PJPrefix}-log-group"
+      RetentionInDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-log-group"
+
+# ------------------------------------------------------------#
+# Output Parameters
+# ------------------------------------------------------------#
+Outputs:
+  LogGroup:
+    Value: !Ref LogGroup
+    Export:
+      Name: !Sub "${PJPrefix}-log-group"

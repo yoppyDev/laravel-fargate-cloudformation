@@ -1,0 +1,334 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - VPC
+# - InternetGateway
+# - PrivateSubnet
+# - PublicSubnet
+# - RouteTable
+# - Route
+# - securityGroup
+# ------------------------------------------------------------#
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  VPC and Subnet Create
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: "Project Name Prefix"
+        Parameters:
+          - PJPrefix
+      - Label:
+          default: VPC
+        Parameters:
+          - VPCCIDR
+      - Label:
+          default: PublicSubnet
+        Parameters:
+          - PublicSubnet1CIDR
+      - Label:
+          default: PrivateSubnet
+        Parameters:
+          - PrivateSubnet1CIDR
+
+# ------------------------------------------------------------#
+# Input Parameters
+# ------------------------------------------------------------#
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel-template
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+  VPCCIDR:
+    Type: String
+    Default: 10.0.0.0/16
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid VPCCidrBlock.
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: 10.0.10.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PublicSubnet1CidrBlock.
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.0.20.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.0.21.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
+
+Resources:
+# ------------------------------------------------------------#
+#  VPC
+# ------------------------------------------------------------#
+# VPC Create
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-vpc"
+
+# InternetGateway Create
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-igw"
+
+# IGW Attach
+  InternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+# ------------------------------------------------------------#
+#  Subnet
+# ------------------------------------------------------------#
+# Public SubnetA Create
+  PublicSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs ]
+      CidrBlock: !Ref PublicSubnet1CIDR
+      VpcId: !Ref VPC
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-public-subnet-1"
+
+# Private SubnetA Create
+  PrivateSubnet1:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs ]
+      CidrBlock: !Ref PrivateSubnet1CIDR
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-subnet-1"
+
+# Private SubnetC Create
+  PrivateSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs ]
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-subnet-2"
+
+# ------------------------------------------------------------#
+#  RouteTable
+# ------------------------------------------------------------#
+# Public RouteTable1 Create
+  PublicRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-public-route-1"
+
+# Private RouteTable1 Create
+  PrivateRouteTable1:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-route-1"
+
+# Private RouteTable2 Create
+  PrivateRouteTable2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-private-route-2"
+
+# ------------------------------------------------------------#
+# Routing
+# ------------------------------------------------------------#
+# PublicRoute1 Create
+  PublicRoute1:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref PublicRouteTable1
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref InternetGateway
+
+# PrivateRoute1 Create
+  PrivateRoute1:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref NatGateway1
+
+# PrivateRoute2 Create
+  PrivateRoute2:
+    Type: "AWS::EC2::Route"
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref NatGateway1
+
+# ------------------------------------------------------------#
+# RouteTable Associate
+# ------------------------------------------------------------#
+# PublicRouteTable Associate Subnet1
+  PublicSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable1
+
+# PrivateRouteTable Associate Subnet1
+  PrivateSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PrivateSubnet1
+      RouteTableId: !Ref PrivateRouteTable1
+
+# PrivateRouteTable Associate Subnet2
+  PrivateSubne21RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PrivateSubnet2
+      RouteTableId: !Ref PrivateRouteTable2
+
+  # ------------------------------------------------------------#
+  #  SecurityGroup
+  # ------------------------------------------------------------#
+  SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${PJPrefix}-SG"
+      GroupDescription: !Sub "${PJPrefix}-SG-Description"
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupIngress:
+        - Description: Enable HTTP access via port 80 IPv4
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: Enable HTTP access via port 80 IPv6
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIpv6: ::/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-SG"
+
+# ------------------------------------------------------------#
+# EIP
+# ------------------------------------------------------------#
+  EIP1:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags  :
+        - Key  : Name
+          Value: !Sub "${PJPrefix}-eip1"
+
+# ------------------------------------------------------------#
+# NatGateway
+# ------------------------------------------------------------#
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt EIP1.AllocationId
+      ConnectivityType: public
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-nat-gateway-1"
+
+# ------------------------------------------------------------#
+# Output Parameters
+# ------------------------------------------------------------#
+Outputs:
+# VPC
+  VPC:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${PJPrefix}-vpc"
+
+  VPCCIDR:
+    Value: !Ref VPCCIDR
+    Export:
+      Name: !Sub "${PJPrefix}-vpc-cidr"
+
+# Subnet
+  PublicSubnet1:
+    Value: !Ref PublicSubnet1
+    Export:
+      Name: !Sub "${PJPrefix}-public-subnet-1"
+
+  PublicSubnet1CIDR:
+    Value: !Ref PublicSubnet1CIDR
+    Export:
+      Name: !Sub "${PJPrefix}-public-subnet-1-cidr"
+
+  PrivateSubnet1:
+    Value: !Ref PrivateSubnet1
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-1"
+
+  PrivateSubnet1CIDR:
+    Value: !Ref PrivateSubnet1CIDR
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-1-cidr"
+
+  PrivateSubnet1CIDR:
+    Value: !Ref PrivateSubnet1CIDR
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-1-cidr"
+
+  PrivateSubnet2:
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub "${PJPrefix}-private-subnet-2"
+
+# Route
+  PublicRouteTable1:
+    Value: !Ref PublicRouteTable1
+    Export:
+      Name: !Sub "${PJPrefix}-public-route-1"
+# SG
+  SG:
+    Value: !Ref SG
+    Export:
+      Name: !Sub "${PJPrefix}-SG"

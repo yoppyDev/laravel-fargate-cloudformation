@@ -76,6 +76,18 @@ deploy()
     rain deploy ./cloudformation/output/main-stack.yml ${PJPrefix} --profile ${AWS_PROFILE}
 }
 
+subDeploy()
+{
+    aws cloudformation package \
+        --template-file ./cloudformation-v2/main.yml \
+        --s3-bucket ${PJPrefix} \
+        --output-template-file ./cloudformation-v2/output/main-stack.yml \
+        --profile ${AWS_PROFILE} \
+        --region ${REGIN}
+
+    rain deploy ./cloudformation-v2/output/main-stack.yml ${PJPrefix} --profile ${AWS_PROFILE}
+}
+
 batch()
 {
  aws ecs run-task \

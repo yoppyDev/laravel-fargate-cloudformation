@@ -1,0 +1,111 @@
+# ------------------------------------------------------------#
+# Create Resource
+# - Service
+# - Cluster Service
+# - Task Definition
+# ------------------------------------------------------------#
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template for ECS resources
+
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel
+    ConstraintDescription: Invalid input value for the PJPrefix.
+  AppKey:
+    Type   : String
+  DatabaseName:
+    Type   : String
+  MasterUsername:
+    Type   : String
+  MasterUserPassword:
+    Type   : String
+
+Resources:
+  # ECS Cluster
+  ECSCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterName: !Sub "${PJPrefix}-cluster"
+
+  # Task Definition
+  ECSWebTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      Family: !Sub "${PJPrefix}-run-web-task"
+      TaskRoleArn:
+        Fn::ImportValue:
+          !Sub "${PJPrefix}-ECSTaskRole-arn"
+      ExecutionRoleArn:
+        Fn::ImportValue:
+          !Sub "${PJPrefix}-ECSTaskRole-arn"
+      NetworkMode: "awsvpc"
+      ContainerDefinitions:
+        - Name: "nginx"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PJPrefix}/build-nginx:latest"
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Protocol: "tcp"
+          Environment:
+          - Name: "APP_ENV"
+            Value: "production"
+          - Name: "APP_KEY"
+            Value: !Sub "{{resolve:ssm:${AppKey}}}"
+          - Name: "DB_HOST"
+            Value:
+              Fn::ImportValue:
+                !Sub "${PJPrefix}-rds-endpoint"
+          - Name: "DB_DATABASE"
+            Value: !Sub "{{resolve:ssm:${DatabaseName}}}"
+          - Name: "DB_USERNAME"
+            Value: !Sub "{{resolve:ssm:${MasterUsername}}}"
+          - Name: "DB_PASSWORD"
+            Value: !Sub "{{resolve:ssm:${MasterUserPassword}}}"
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-create-group: true
+              awslogs-group: !Sub "${PJPrefix}-log-group"
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: "nginx"
+      RequiresCompatibilities:
+        - "FARGATE"
+      Cpu: "256"
+      Memory: "512"
+
+  # ECS Service
+  ECSService:
+    Type: "AWS::ECS::Service"
+    DependsOn: ECSCluster
+    Properties:
+      ServiceName: !Sub "${PJPrefix}-service"
+      Cluster: !Ref ECSCluster
+      TaskDefinition: !Ref ECSWebTaskDefinition
+      LaunchType: FARGATE
+      DesiredCount: 1
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - Fn::ImportValue:
+                !Sub "${PJPrefix}-private-subnet-1"
+          SecurityGroups:
+            - Fn::ImportValue:
+                !Sub "${PJPrefix}-SG"
+
+Outputs:
+  ClusterArn:
+    Value: !Ref ECSCluster
+    Description: The ARN of the ECS cluster
+
+  ECSWebTaskDefinitionArn:
+    Description: The ARN of the created web task definition
+    Value: !Ref ECSWebTaskDefinition
+
+  ServiceArn:
+    Value: !Ref ECSService
+    Description: The ARN of the ECS service
