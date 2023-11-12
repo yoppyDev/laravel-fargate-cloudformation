@@ -1,0 +1,114 @@
+# ------------------------------------------------------------#
+# Create Resource
+# ------------------------------------------------------------#
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  Laravel on ECS
+
+Metadata:
+  "AWS::CloudFormation::Interface":
+    ParameterGroups:
+      - Label:
+          default: "Project Name Prefix"
+        Parameters:
+          - PJPrefix
+      - Label:
+          default: VPC
+        Parameters:
+          - VPCCIDR
+      - Label:
+          default: PublicSubnet
+        Parameters:
+          - PublicSubnet1CIDR
+      - Label:
+          default: PrivateSubnet
+        Parameters:
+          - PrivateSubnet1CIDR
+
+Parameters:
+  PJPrefix:
+    Type: String
+    Default: laravel-template
+    ConstraintDescription: Invalid input value for the PJPrefix.
+
+  VPCCIDR:
+    Type: String
+    Default: 10.0.0.0/16
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid VPCCidrBlock.
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: 10.0.10.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PublicSubnet1CidrBlock.
+
+  PrivateSubnet1CIDR:
+    Type: String
+    Default: 10.0.20.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet1CidrBlock.
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: 10.0.21.0/24
+    MinLength: 9
+    MaxLength: 18
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid PrivateSubnet2CidrBlock.
+
+Resources:
+  # ------------ IAM Role ----------------
+  iamRole:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PJPrefix : !Ref PJPrefix
+      TemplateURL: ./stacks/iam-role.yml
+  # ------------ cloudwatch ----------------
+  cloudwatch:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PJPrefix : !Ref PJPrefix
+      TemplateURL: ./stacks/cloudwatch.yml
+  # ------------ vpx ----------------
+  vpc:
+    Type      : AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        PJPrefix : !Ref PJPrefix
+        VPCCIDR : !Sub "${VPCCIDR}"
+        PublicSubnet1CIDR : !Sub "${PublicSubnet1CIDR}"
+        PrivateSubnet1CIDR : !Sub "${PrivateSubnet1CIDR}"
+        PrivateSubnet2CIDR : !Sub "${PrivateSubnet2CIDR}"
+      TemplateURL: ./stacks/vpc.yml
+  # ------------ rds ----------------
+  rds:
+    Type      : AWS::CloudFormation::Stack
+    DependsOn : [vpc]
+    Properties:
+      Parameters:
+        PJPrefix : !Ref PJPrefix
+        DatabaseName : !Sub "/${PJPrefix}/database"
+        MasterUsername : !Sub "/${PJPrefix}/master/username"
+        MasterUserPassword : !Sub "/${PJPrefix}/master/password"
+      TemplateURL: stacks/rds.yml
+  # ------------ ecs ----------------
+  ecs:
+    Type      : AWS::CloudFormation::Stack
+    DependsOn : [vpc, iamRole, cloudwatch, rds]
+    Properties:
+      Parameters:
+        PJPrefix : !Ref PJPrefix
+        AppKey : !Sub "/${PJPrefix}/APP_KEY"
+        DatabaseName : !Sub "/${PJPrefix}/database"
+        MasterUsername : !Sub "/${PJPrefix}/master/username"
+        MasterUserPassword : !Sub "/${PJPrefix}/master/password"
+      TemplateURL: stacks/ecs.yml
