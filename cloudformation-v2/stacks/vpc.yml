@@ -32,6 +32,7 @@ Metadata:
           default: PrivateSubnet
         Parameters:
           - PrivateSubnet1CIDR
+          - PrivateSubnet2CIDR
 
 # ------------------------------------------------------------#
 # Input Parameters
@@ -154,24 +155,6 @@ Resources:
         - Key: Name
           Value: !Sub "${PJPrefix}-public-route-1"
 
-# Private RouteTable1 Create
-  PrivateRouteTable1:
-    Type: "AWS::EC2::RouteTable"
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub "${PJPrefix}-private-route-1"
-
-# Private RouteTable2 Create
-  PrivateRouteTable2:
-    Type: "AWS::EC2::RouteTable"
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub "${PJPrefix}-private-route-2"
-
 # ------------------------------------------------------------#
 # Routing
 # ------------------------------------------------------------#
@@ -183,22 +166,6 @@ Resources:
       DestinationCidrBlock: "0.0.0.0/0"
       GatewayId: !Ref InternetGateway
 
-# PrivateRoute1 Create
-  PrivateRoute1:
-    Type: "AWS::EC2::Route"
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable1
-      DestinationCidrBlock: "0.0.0.0/0"
-      NatGatewayId: !Ref NatGateway1
-
-# PrivateRoute2 Create
-  PrivateRoute2:
-    Type: "AWS::EC2::Route"
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable2
-      DestinationCidrBlock: "0.0.0.0/0"
-      NatGatewayId: !Ref NatGateway1
-
 # ------------------------------------------------------------#
 # RouteTable Associate
 # ------------------------------------------------------------#
@@ -208,20 +175,6 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable1
-
-# PrivateRouteTable Associate Subnet1
-  PrivateSubnet1RouteTableAssociation:
-    Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties:
-      SubnetId: !Ref PrivateSubnet1
-      RouteTableId: !Ref PrivateRouteTable1
-
-# PrivateRouteTable Associate Subnet2
-  PrivateSubne21RouteTableAssociation:
-    Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties:
-      SubnetId: !Ref PrivateSubnet2
-      RouteTableId: !Ref PrivateRouteTable2
 
   # ------------------------------------------------------------#
   #  SecurityGroup
@@ -252,29 +205,20 @@ Resources:
         - Key: Name
           Value: !Sub "${PJPrefix}-SG"
 
-# ------------------------------------------------------------#
-# EIP
-# ------------------------------------------------------------#
-  EIP1:
-    Type: AWS::EC2::EIP
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      Domain: vpc
-      Tags  :
-        - Key  : Name
-          Value: !Sub "${PJPrefix}-eip1"
-
-# ------------------------------------------------------------#
-# NatGateway
-# ------------------------------------------------------------#
-  NatGateway1:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt EIP1.AllocationId
-      ConnectivityType: public
-      SubnetId: !Ref PublicSubnet1
+      GroupName: !Sub "${PJPrefix}-DBSecurityGroup"
+      GroupDescription: !Sub "${PJPrefix}-DBSecurityGroup-Description"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 10.0.0.0/16
       Tags:
         - Key: Name
-          Value: !Sub "${PJPrefix}-nat-gateway-1"
+          Value: !Sub "${PJPrefix}-DBSecurityGroup"
 
 # ------------------------------------------------------------#
 # Output Parameters
@@ -332,3 +276,7 @@ Outputs:
     Value: !Ref SG
     Export:
       Name: !Sub "${PJPrefix}-SG"
+  DBSecurityGroup:
+    Value: !Ref DBSecurityGroup
+    Export:
+      Name: !Sub "${PJPrefix}-DBSecurityGroup"

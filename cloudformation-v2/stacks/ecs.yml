@@ -87,12 +87,13 @@ Resources:
       TaskDefinition: !Ref ECSWebTaskDefinition
       LaunchType: FARGATE
       DesiredCount: 1
+      enableExecuteCommand: true
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED
           Subnets:
             - Fn::ImportValue:
-                !Sub "${PJPrefix}-private-subnet-1"
+                !Sub "${PJPrefix}-public-subnet-1"
           SecurityGroups:
             - Fn::ImportValue:
                 !Sub "${PJPrefix}-SG"

@@ -54,6 +54,9 @@ Resources:
       DBClusterIdentifier        : !Sub "${PJPrefix}-cluster"
       DBClusterParameterGroupName: !Ref ClusterParameterGroup
       DBSubnetGroupName          : !Ref DBSubnetGroup
+      VpcSecurityGroupIds           :
+        - Fn::ImportValue:
+            !Sub "${PJPrefix}-DBSecurityGroup"
       Engine                     : "aurora-mysql"
       DatabaseName               : !Sub "{{resolve:ssm:${DatabaseName}}}"
       MasterUsername             : !Sub "{{resolve:ssm:${MasterUsername}}}"
@@ -73,20 +76,7 @@ Resources:
       AvailabilityZone            : !Sub "${AWS::Region}a"
       DBClusterIdentifier         : !Ref RDSCluster
       DBSubnetGroupName           : !Ref DBSubnetGroup
-      PromotionTier               : 1
-
-  RDSInstanceSecondary:
-    Type: AWS::RDS::DBInstance
-    DependsOn: RDSCluster
-    Properties:
-      DBInstanceIdentifier        : !Sub "${PJPrefix}-instance-secondary"
-      DBInstanceClass             : "db.t4g.medium"
-      Engine                      : "aurora-mysql"
-      AvailabilityZone            : !Sub "${AWS::Region}c"
-      DBClusterIdentifier         : !Ref RDSCluster
-      DBSubnetGroupName           : !Ref DBSubnetGroup
-      PromotionTier               : 2
-
+      MultiAZ                     : false
 
 Outputs:
   RDSEndpoint:

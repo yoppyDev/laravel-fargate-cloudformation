@@ -88,16 +88,13 @@ subDeploy()
     rain deploy ./cloudformation-v2/output/main-stack.yml ${PJPrefix} --profile ${AWS_PROFILE}
 }
 
-batch()
+updateService()
 {
- aws ecs run-task \
-    --cluster ${PJPrefix}-cluster \
-    --task-definition ${PJPrefix}-batch-run-task \
-    --overrides '{"containerOverrides": [{"name":"laravel","command": ["sh","-c","php artisan -v"]}]}' \
-    --launch-type FARGATE \
-    --network-configuration "awsvpcConfiguration={subnets=[${SUBNET_1}],securityGroups=[${SECURITY_GROUP}],assignPublicIp=ENABLED}" \
-    --region ${REGIN} \
-    --profile ${AWS_PROFILE}
+    aws ecs update-service \
+        --cluster ${PJPrefix}-cluster \
+        --service ${PJPrefix}-service \
+        --task-definition ${PJPrefix}-run-web-task \
+        --force-new-deployment
 }
 
 
