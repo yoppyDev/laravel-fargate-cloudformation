@@ -121,6 +121,8 @@ jobs:
           aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --task-definition ${{ env.TASK_DEFINITION }} --force-new-deployment
 
   migration:
+    if: github.event_name == 'push'
+    needs: building
     runs-on: ubuntu-latest
 
     steps:
