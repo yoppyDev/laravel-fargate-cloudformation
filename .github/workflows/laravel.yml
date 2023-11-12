@@ -119,3 +119,38 @@ jobs:
       - name: Deploy Amazon ECS task definition
         run:
           aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --task-definition ${{ env.TASK_DEFINITION }} --force-new-deployment
+
+  migration:
+    if: github.event_name == 'push'
+    needs: building
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: install session manager plugin
+        run: |
+          curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
+          sudo dpkg -i session-manager-plugin.deb
+
+      - name: get task arn
+        id: get-task-arn
+        run: |
+          echo "::set-output name=task_arn::$(aws ecs list-tasks --cluster ${{ env.ECS_CLUSTER }} --service-name ${{ env.ECS_SERVICE }} --query 'taskArns[0]' --output text)"
+
+      - name: Execute migrate
+        run: |
+          aws ecs execute-command \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --task ${{ steps.get-task-arn.outputs.task_arn }} \
+            --container nginx \
+            --interactive \
+            --command 'php artisan migrate --force'
