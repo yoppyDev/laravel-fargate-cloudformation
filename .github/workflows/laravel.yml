@@ -151,4 +151,4 @@ jobs:
             --task ${{ steps.get-task-arn.outputs.task_arn }} \
             --container nginx \
             --interactive \
-            --command 'php artisan migrate'
+            --command 'php artisan migrate --force'
