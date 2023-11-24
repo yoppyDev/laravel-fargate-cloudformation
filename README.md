@@ -6,38 +6,46 @@
 出典：https://aws.amazon.com/jp/cdp/ec-container/
 
 ## 手順
-1. .envファイルを作成
+
 ```
+# 1. リポジトリをクローン
+git clone git@github.com:yoppytaro/laravel-fargate-cloudformation.git
+
+# 2. .envファイルを作成 & 編集
 cp .env.example .env
-```
-2. .envファイルにそれぞれの値を入力
-3. ~~Laravelプロジェクト作成~~ (srcを追加したので不要になった)
-```
-sh tools/util.sh createProject
-```
-4. ParameterStore作成
-```
+
+# 3. ParameterStore作成
 sh tools/util.sh createSystemParameter
-```
-5. ECR作成
-```
+
+# 4. ECR作成
 sh tools/util.sh createEcr
-```
-6. buildしてpush
-```
+
+# 5. buildしてpush
 sh tools/aws-ecr-login.sh
+sh tools/util.sh baseBuild
+sh tools/util.sh basePush
 sh tools/util.sh build
 sh tools/util.sh push
-```
-7. S3バケット作成
-```
+
+# 6. S3バケット作成
 sh tools/util.sh createBucket
-```
-8. デプロイ
-```
-sh tools/util.sh deploy
+
+# 7. デプロイ
+sh tools/util.sh subDeploy
+
+# 8. migrate
+aws ecs execute-command \
+    --cluster laravel-template-cluster \
+    --task ${{ taskArn }} \
+    --container nginx \
+    --interactive \
+    --command 'php artisan migrate --force'
 ```
 
+
+## デプロイ
+`sh util.sh updateService`かmainにマージするとデプロイされる
+(github actionの設定は必要)
 
 
 ## スクラップ

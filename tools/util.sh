@@ -3,15 +3,6 @@
 set -u
 . "$(cd "$(dirname "$0")/../" && pwd)/.env"
 
-createProject()
-{
-    docker build --platform=linux/amd64 \
-        -t composer:latest \
-        -f ./docker/base/composer/Dockerfile .
-
-    docker run -v $(pwd):/application composer:latest composer create-project --prefer-dist "laravel/laravel=10.*" src
-}
-
 createBucket()
 {
     aws s3api create-bucket --bucket ${PJPrefix} --region ${REGIN} --create-bucket-configuration LocationConstraint=${REGIN} --profile ${AWS_PROFILE}
@@ -19,8 +10,8 @@ createBucket()
 
 createEcr()
 {
-    aws ecr create-repository --repository-name ${PJPrefix}/laravel --region ${REGIN} --profile ${AWS_PROFILE}
-    aws ecr create-repository --repository-name ${PJPrefix}/nginx --region ${REGIN} --profile ${AWS_PROFILE}
+    aws ecr create-repository --repository-name ${PJPrefix}/base-nginx --region ${REGIN} --profile ${AWS_PROFILE}
+    aws ecr create-repository --repository-name ${PJPrefix}/build-nginx --region ${REGIN} --profile ${AWS_PROFILE}
 }
 
 createSystemParameter()
