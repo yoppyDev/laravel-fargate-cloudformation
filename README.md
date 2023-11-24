@@ -9,7 +9,7 @@
 
 ```
 # 1. リポジトリをクローン
-git clone git@github.com:yoppytaro/laravel-fargate-cloudformation.git
+git clone git@github.com:yoppyDev/laravel-fargate-cloudformation.git
 
 # 2. .envファイルを作成 & 編集
 cp .env.example .env
