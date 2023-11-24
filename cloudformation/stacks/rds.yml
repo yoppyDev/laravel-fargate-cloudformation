@@ -54,6 +54,9 @@ Resources:
       DBClusterIdentifier        : !Sub "${PJPrefix}-cluster"
       DBClusterParameterGroupName: !Ref ClusterParameterGroup
       DBSubnetGroupName          : !Ref DBSubnetGroup
+      VpcSecurityGroupIds        :
+        - Fn::ImportValue:
+            !Sub "${PJPrefix}-DBSecurityGroup"
       Engine                     : "aurora-mysql"
       DatabaseName               : !Sub "{{resolve:ssm:${DatabaseName}}}"
       MasterUsername             : !Sub "{{resolve:ssm:${MasterUsername}}}"

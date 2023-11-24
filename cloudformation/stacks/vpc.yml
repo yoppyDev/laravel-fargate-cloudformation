@@ -298,6 +298,21 @@ Resources:
         - Key: Name
           Value: !Sub "${PJPrefix}-SG"
 
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${PJPrefix}-DBSecurityGroup"
+      GroupDescription: !Sub "${PJPrefix}-DBSecurityGroup-Description"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref SG
+      Tags:
+        - Key: Name
+          Value: !Sub "${PJPrefix}-DBSecurityGroup"
+
 # ------------------------------------------------------------#
 # EIP
 # ------------------------------------------------------------#
@@ -422,3 +437,8 @@ Outputs:
     Value: !Ref SG
     Export:
       Name: !Sub "${PJPrefix}-SG"
+
+  DBSecurityGroup:
+    Value: !Ref DBSecurityGroup
+    Export:
+      Name: !Sub "${PJPrefix}-DBSecurityGroup"
