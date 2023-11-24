@@ -3,8 +3,10 @@ name: Laravel
 on:
   pull_request:
     branches: [ "main" ]
+    paths   : [ "src/**" ]
   push:
     branches: [ "main" ]
+    paths   : [ "src/**" ]
 
 env:
   AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
