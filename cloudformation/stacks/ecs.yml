@@ -86,6 +86,7 @@ Resources:
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref ECSWebTaskDefinition
       DesiredCount: 2
+      enableExecuteCommand: true
       LaunchType: FARGATE
       loadBalancers:
         - ContainerName: "nginx"
